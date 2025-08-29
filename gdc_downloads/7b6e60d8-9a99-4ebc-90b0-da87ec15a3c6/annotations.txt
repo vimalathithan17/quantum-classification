@@ -1,0 +1,2 @@
+id	submitter_id	entity_type	entity_id	category	classification	created_datetime	status	notes
+f242103b-73a0-5a0e-ac90-21a16cd81dc4	4707	analyte	f92fa42c-ad2a-4a6a-b1ab-c0db23ac51ce	Item is noncanonical	Notification	2011-12-15T00:00:00	Approved	GBM Recurrent/Triplet

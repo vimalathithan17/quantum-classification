@@ -1,0 +1,1 @@
+for item in {"Masked Cop","Iso","Copy Number Segment","Alle"}; do  find $1 -type d -name "$item*" -exec rm -rf {} +; done

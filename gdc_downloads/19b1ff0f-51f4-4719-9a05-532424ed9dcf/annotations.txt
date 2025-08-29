@@ -1,0 +1,3 @@
+id	submitter_id	entity_type	entity_id	category	classification	created_datetime	status	notes
+5177419a-de07-5ceb-ab22-6d0856dd5be9	1760	analyte	06c14955-1a5d-4e15-bfbf-be1509ee7369	Item in special subset	Notification	2011-03-14T00:00:00	Approved	Necrosis Study
+21612b78-b057-4e94-a4d9-e9f3f69eaf68	\N	masked_somatic_mutation	19b1ff0f-51f4-4719-9a05-532424ed9dcf	General	Notification	2022-02-28T14:49:53.182002-06:00	Approved	Variants from SomaticSniper are not included.

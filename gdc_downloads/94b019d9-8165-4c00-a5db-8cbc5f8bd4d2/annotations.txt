@@ -1,0 +1,3 @@
+id	submitter_id	entity_type	entity_id	category	classification	created_datetime	status	notes
+2bb69c66-37ba-4734-9a3c-4c89dc030756	\N	masked_somatic_mutation	94b019d9-8165-4c00-a5db-8cbc5f8bd4d2	General	Notification	2022-02-28T13:39:54.836493-06:00	Approved	Variants from SomaticSniper are not included.
+2fdeee39-0e56-5d73-a6f8-dd3b01edb45a	4703	analyte	74e53350-e588-4f8a-816e-67984adca9b5	Item is noncanonical	Notification	2011-12-15T00:00:00	Approved	GBM Recurrent/Triplet
