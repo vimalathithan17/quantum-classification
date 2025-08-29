@@ -1,4 +1,0 @@
-id	submitter_id	entity_type	entity_id	category	classification	created_datetime	status	notes
-27b68970-9878-4581-a8a6-8e700dae5e70	\N	masked_somatic_mutation	a53c752a-f6b8-4e0c-993f-732b9128bf50	General	Notification	2022-02-28T14:46:43.118518-06:00	Approved	Variants from SomaticSniper are not included.
-cf45f352-8abe-539e-b494-accaedcffbc4	4728	analyte	cd3a31a0-26f3-4a11-aa53-151b62d0fe0b	Item is noncanonical	Notification	2011-12-15T00:00:00	Approved	GBM Triplet
-02f9b631-dd0e-560b-8418-280366c73bc0	4727	analyte	b40e7dfb-d32f-4750-81a9-80668586890d	Item is noncanonical	Notification	2011-12-15T00:00:00	Approved	GBM Triplet

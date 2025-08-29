@@ -67,7 +67,7 @@ def find_and_process_all_maf_files(root_dir):
 
 # --- How to Use ---
 # Set the path to your 'organizedTop10' directory here
-organized_top10_dir = '/workspace/quantum-classification/organizedTop10'
+organized_top10_dir = 'organizedTop10'
 
 # Run the function
 find_and_process_all_maf_files(organized_top10_dir)

@@ -4,8 +4,8 @@ import pandas as pd
 
 # --- Config ---
 df_csv_path = "csv/files_by_case_flat.csv"  # CSV exported from your df
-source_dir = "/workspace/quantum-classification/top10gbm"    # Folder where the files currently are
-target_dir = "/workspace/quantum-classification/organizedTop10"          # Base folder for reorganized files
+source_dir = "top10gbm"    # Folder where the files currently are
+target_dir = "organizedTop10"          # Base folder for reorganized files
 
 # --- Load the flattened CSV ---
 df = pd.read_csv(df_csv_path)
