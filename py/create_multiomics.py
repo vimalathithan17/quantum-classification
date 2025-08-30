@@ -217,6 +217,24 @@ def create_multi_omics(root_dir, out_path, label='tumor'):
     df_reset.to_csv(out_path, sep='\t', index=False)
     print(f'Wrote multi-omics file to {out_path} ({len(df_reset)} rows)')
 
+    # Also create a features-by-case file: rows = features, columns = case_ids
+    # include the 'class' feature as one of the rows
+    features_df = df.copy()
+    # append class as a row in features_df: class per case is the same label scalar here
+    # convert class into a Series indexed by case id and then append
+    class_series = pd.Series(label, index=features_df.index, name='class')
+    features_df_with_class = pd.concat([features_df, pd.DataFrame({'class': class_series})], axis=1)
+    features_final = features_df_with_class.T
+    # Reset index so first column is 'feature' and rest are case IDs
+    features_reset = features_final.reset_index().rename(columns={'index': 'feature'})
+
+    base, ext = os.path.splitext(out_path)
+    if ext == '':
+        ext = '.tsv'
+    features_out = f"{base}_features_by_case{ext}"
+    features_reset.to_csv(features_out, sep='\t', index=False)
+    print(f'Wrote features-by-case file to {features_out} ({len(features_reset)} rows)')
+
 
 def main():
     parser = argparse.ArgumentParser(description='Create one-row-per-case multi-omics TSV from organizedTop10')
