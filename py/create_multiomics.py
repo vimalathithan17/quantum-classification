@@ -182,7 +182,8 @@ def create_multi_omics(root_dir, out_path, label='tumor'):
     index = []
 
     # Prepare for missing-files reporting: we'll record which loaders found files per patient
-    loader_names = [l.__name__ for l in (load_gene_expression, load_miRNA, load_cnv, load_methylation, load_proteome, load_snv)]
+    #loader_names = [l.__name__ for l in (load_gene_expression, load_miRNA, load_cnv, load_methylation, load_proteome, load_snv)]
+    loader_names = [l.__name__ for l in (load_gene_expression, load_miRNA, load_cnv, load_methylation, load_snv)]
     missing_report_rows = []
 
     for pid in patients:
@@ -204,24 +205,21 @@ def create_multi_omics(root_dir, out_path, label='tumor'):
             if s is not None and not s.empty:
                 parts.append(s)
 
+        # build missing-files row for this patient
+        has_data = bool(parts)
+        found_flags = {ln: (1 if per_loader_files.get(ln) else 0) for ln in loader_names}
+        mr_row = {'case_id': pid, 'has_data': has_data}
+        mr_row.update(found_flags)
+        missing_report_rows.append(mr_row)
+
         if not parts:
             print(f'  - no data found for {pid}, skipping')
-            # still record missing files (all loaders had none)
-            row = {'case_id': pid, 'has_data': False}
-            for ln in loader_names:
-                row[ln] = 0
-            missing_report_rows.append(row)
             continue
 
         # concat series into one-row dataframe
         row = pd.concat(parts, axis=0)
         rows.append(row)
         index.append(pid)
-    # for reporting, mark which loaders had files
-    found_flags = {ln: (1 if per_loader_files.get(ln) else 0) for ln in loader_names}
-    row = {'case_id': pid, 'has_data': True}
-    row.update(found_flags)
-    missing_report_rows.append(row)
 
     if not rows:
         print('No patients produced data. Exiting.')

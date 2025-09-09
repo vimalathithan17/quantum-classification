@@ -11,6 +11,7 @@ Options:
   -c, --csv PATH       Path to flattened CSV to pass to py/organize.py (default: csv/files_by_case_flat.csv)
   -s, --source PATH    Source directory where files currently are (default: top10gbm)
   -t, --target PATH    Target directory for organized output (default: organizedTop10)
+	-D, --downloads DIR  Downloads directory containing GDC downloads (default: gdc_downloads)
   --dry-run            Print commands without executing them
   -h, --help           Show this help message and exit
 
@@ -23,6 +24,7 @@ EOF
 CSV="csv/files_by_case_flat.csv"
 SOURCE="top10gbm"
 TARGET="organizedTop10"
+DOWNLOADS="gdc_downloads"
 DRY_RUN=0
 
 while [ "$#" -gt 0 ]; do
@@ -35,6 +37,8 @@ while [ "$#" -gt 0 ]; do
 			TARGET="$2"; shift 2;;
 		--dry-run)
 			DRY_RUN=1; shift;;
+		-D|--downloads)
+			DOWNLOADS="$2"; shift 2;;
 		-h|--help)
 			usage; exit 0;;
 		*)
@@ -45,6 +49,7 @@ done
 echo "CSV: $CSV"
 echo "Source: $SOURCE"
 echo "Target: $TARGET"
+echo "Downloads: $DOWNLOADS"
 
 run_or_echo() {
 	if [ "$DRY_RUN" -eq 1 ]; then
@@ -54,9 +59,9 @@ run_or_echo() {
 	fi
 }
 
-run_or_echo bash sh/gzunzip.sh gdc_downloads
+run_or_echo bash sh/gzunzip.sh "$DOWNLOADS"
 run_or_echo mkdir -p "$SOURCE"
-run_or_echo bash sh/mvfiles.sh gdc_downloads "$SOURCE"
+run_or_echo bash sh/mvfiles.sh "$DOWNLOADS" "$SOURCE"
 run_or_echo mkdir -p "$TARGET"
 run_or_echo python py/organize.py --csv "$CSV" --source "$SOURCE" --target "$TARGET"
 run_or_echo python py/process_maf.py
