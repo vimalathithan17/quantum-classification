@@ -36,7 +36,7 @@ def validate_columns(dfs):
     return True, ref
 
 
-def merge_files(paths, out_path: Path, on_duplicates: str = 'error'):
+def merge_files(paths, out_path: Path, on_duplicates: str = 'error', mode: str = 'union'):
     dfs = []
     for p in paths:
         p = Path(p)
@@ -48,20 +48,32 @@ def merge_files(paths, out_path: Path, on_duplicates: str = 'error'):
         raise ValueError("No input files provided")
 
     identical, ref_cols = validate_columns(dfs)
-    if not identical:
-        # align to union of columns, filling missing with NaN
-        all_cols = []
-        for df in dfs:
-            for c in df.columns:
-                if c not in all_cols:
-                    all_cols.append(c)
-        aligned = []
-        for df in dfs:
-            aligned.append(df.reindex(columns=all_cols))
+    if mode == 'union':
+        if not identical:
+            # align to union of columns, filling missing with NaN
+            all_cols = []
+            for df in dfs:
+                for c in df.columns:
+                    if c not in all_cols:
+                        all_cols.append(c)
+            aligned = []
+            for df in dfs:
+                aligned.append(df.reindex(columns=all_cols))
+            df_all = pd.concat(aligned, axis=0, ignore_index=True)
+            print("Warning: input files had different column orders/sets — aligned to union of columns", file=sys.stderr)
+        else:
+            df_all = pd.concat(dfs, axis=0, ignore_index=True)
+    elif mode == 'intersection':
+        # keep only columns that appear in every input (intersection)
+        # use the ordering of the first dataframe but only keep columns present in all
+        common_cols = [c for c in dfs[0].columns if all((c in df.columns) for df in dfs)]
+        if 'case_id' not in common_cols:
+            raise RuntimeError("'case_id' must be present in all inputs to use intersection mode")
+        aligned = [df.reindex(columns=common_cols) for df in dfs]
         df_all = pd.concat(aligned, axis=0, ignore_index=True)
-        print("Warning: input files had different column orders/sets — aligned to union of columns", file=sys.stderr)
+        print("Info: input files differed; retained only columns present in all inputs (intersection)", file=sys.stderr)
     else:
-        df_all = pd.concat(dfs, axis=0, ignore_index=True)
+        raise ValueError(f"Unknown mode: {mode}")
 
     # Expect a case_id column
     if 'case_id' not in df_all.columns:
@@ -99,10 +111,12 @@ def main():
     parser.add_argument('--out', '-o', required=True, help='Output merged TSV path')
     parser.add_argument('--on-duplicates', choices=['error', 'keep-first', 'keep-last'], default='error',
                         help="Behavior when duplicate case_id values are present across inputs (default: error)")
+    parser.add_argument('--mode', choices=['union', 'intersection'], default='union',
+                        help="Column alignment mode: 'union' (default) keeps union of columns; 'intersection' keeps only columns present in all inputs")
     args = parser.parse_args()
 
     try:
-        merge_files(args.inputs, args.out, args.on_duplicates)
+        merge_files(args.inputs, args.out, args.on_duplicates, mode=args.mode)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(2)
