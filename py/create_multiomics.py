@@ -183,7 +183,7 @@ def create_multi_omics(root_dir, out_path, label='tumor'):
 
     # Prepare for missing-files reporting: we'll record which loaders found files per patient
     #loader_names = [l.__name__ for l in (load_gene_expression, load_miRNA, load_cnv, load_methylation, load_proteome, load_snv)]
-    loader_names = [l.__name__ for l in (load_gene_expression, load_miRNA, load_cnv, load_methylation, load_snv)]
+    loader_names = [l.__name__ for l in (load_cnv, load_snv)]
     missing_report_rows = []
 
     for pid in patients:
