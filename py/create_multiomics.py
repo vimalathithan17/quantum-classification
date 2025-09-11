@@ -192,7 +192,7 @@ def create_multi_omics(root_dir, out_path, label='tumor'):
 
         parts = []
         per_loader_files = {}
-        for loader in (load_gene_expression, load_miRNA, load_cnv, load_methylation, load_proteome, load_snv):
+        for loader in (load_cnv, load_snv):
             try:
                 s = loader(pdir)
             except Exception as e:
