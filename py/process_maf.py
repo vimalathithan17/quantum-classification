@@ -65,9 +65,16 @@ def find_and_process_all_maf_files(root_dir):
                 print("-" * 50)
     print("All mutation files have been processed.")
 
-# --- How to Use ---
-# Set the path to your 'organizedTop10' directory here
-organized_top10_dir = 'organizedTop10'
+def main():
+    import argparse
 
-# Run the function
-find_and_process_all_maf_files(organized_top10_dir)
+    parser = argparse.ArgumentParser(description='Find and process .maf files under an organizedTop10 directory')
+    parser.add_argument('--root', '-r', dest='root', default='organizedTop10',
+                        help="Root organizedTop10 directory (default: 'organizedTop10')")
+    args = parser.parse_args()
+
+    find_and_process_all_maf_files(args.root)
+
+
+if __name__ == '__main__':
+    main()

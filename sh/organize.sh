@@ -16,7 +16,9 @@ Options:
   -h, --help           Show this help message and exit
 
 This script runs a sequence of helpers and then invokes:
-  python py/organize.py --csv <CSV> --source <SOURCE> --target <TARGET>
+	python py/organize.py --csv <CSV> --source <SOURCE> --target <TARGET>
+and then processes any .maf files under the target with:
+	python py/process_maf.py --root <TARGET>
 
 EOF
 }
@@ -64,7 +66,7 @@ run_or_echo mkdir -p "$SOURCE"
 run_or_echo bash sh/mvfiles.sh "$DOWNLOADS" "$SOURCE"
 run_or_echo mkdir -p "$TARGET"
 run_or_echo python py/organize.py --csv "$CSV" --source "$SOURCE" --target "$TARGET"
-run_or_echo python py/process_maf.py
+run_or_echo python py/process_maf.py --root "$TARGET"
 run_or_echo bash sh/rmun.sh "$TARGET"
 run_or_echo bash sh/rm#.sh "$TARGET"
 run_or_echo bash sh/rmmaf.sh "$TARGET"
