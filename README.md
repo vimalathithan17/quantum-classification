@@ -13,6 +13,7 @@ This repo contains small helpers and Python scripts to:
 - Organize downloaded files and build `organizedTop10_*`: `sh/organize.sh` (calls `py/organize.py`)
 - Create a per-run multi-omics TSV: `py/create_multiomics.py`
 - Optionally check which data categories are present per case: `py/check_datacategories.py`
+ - Optionally check which data categories are present per case (helper may be absent in this repo): `py/check_datacategories.py`
 - Merge per-run TSVs (tumor + normal): `py/merge_multiomics.py`
 
 All examples assume you run commands from the repository root.
@@ -51,7 +52,7 @@ Options:
 - `-c, --csv PATH` : Flattened CSV mapping files to cases (default: `csv/files_by_case_flat.csv`).
 - `-s, --source PATH` : Source folder containing downloaded/unpacked files (default: `top10gbm`).
 - `-t, --target PATH` : Target organized directory (default: `organizedTop10`).
-- `--downloads PATH` : If different from default downloads dir, pass it here (alias for `-d`).
+ - `-D, --downloads DIR` : Downloads directory containing GDC downloads (default: `gdc_downloads`).
 - `--dry-run` : Print actions without performing them.
 - `-h, --help` : Show usage.
 
@@ -315,3 +316,114 @@ If you'd like, I can:
 - Add a `--dry-run` mode to `sh/install.sh` (currently `sh/organize.sh` supports `--dry-run`).
 - Add examples of expected CSV layout or a small example dataset.
 - Add a short wrapper script that chains the entire flow for a manifest and label.
+
+---
+
+Scripts inventory (generated from `py/` and `sh` files)
+-----------------------------------------------
+
+Below is a concise, up-to-date reference for all Python and shell scripts included in the repository. Each entry contains the script path, a short purpose statement, and a minimal usage example.
+
+- `py/create_multiomics.py`
+  - Purpose: Scan an `organizedTop10` root (one folder per case), load available modalities (CNV, SNV, etc.), and produce per-run multi-omics outputs:
+    - `<out>.tsv` : case-by-feature (columns: `case_id`, `class`, feature columns)
+    - `<out>_features_by_case.tsv` : transposed features-by-case
+    - `<out>_missing_files.tsv` : per-case report of which loaders found files
+  - Example:
+
+    `python3 py/create_multiomics.py --root organizedTop10_tumor --out outputs/tumor_all_gbm.tsv --label tumor`
+
+  - Notes: The script includes a set of per-modality loaders. If a loader finds multiple files for a modality the values are averaged across files. The missing files report helps inspect modality coverage per case.
+
+- `py/merge_multiomics.py`
+  - Purpose: Merge multiple case-by-feature TSVs (outputs of `create_multiomics.py`) into a single TSV. Aligns columns by union (default) or intersection and supports simple duplicate `case_id` handling.
+  - Example:
+
+    `python3 py/merge_multiomics.py outputs/tumor_all_gbm.tsv outputs/normal_all_gbm.tsv -o outputs/merged_all_gbm.tsv --on-duplicates keep-first`
+
+  - Notes: By default duplicate `case_id` values cause an error; set `--on-duplicates keep-first|keep-last` to control behavior. Use `--mode intersection` to retain only columns present in all inputs.
+
+- `py/organize.py`
+  - Purpose: Reorganize downloaded files into an `organizedTop10/<case>/<Data Category>/<Data Type>/` layout using a flattened CSV mapping (e.g. `csv/files_by_case_flat.csv`). Moves files from a source directory into the structured target tree.
+  - Example:
+
+    `python3 py/organize.py --csv csv/files_by_case_flat.csv --source top10gbm --target organizedTop10`
+
+  - Notes: The flattened CSV is expected to contain `Case ID`, `Data Category`, `Data Type`, and file lists (columns are processed by the script). Missing source files are reported as warnings.
+
+- `py/process_maf.py`
+  - Purpose: Find `.maf` files under an `organizedTop10` tree, convert them to a binary mutation matrix (samples x genes), and write `<basename>_processed.tsv` next to each `.maf`.
+  - Example:
+
+    `python3 py/process_maf.py --root organizedTop10`
+
+  - Notes: The script expects `.maf` files containing `Hugo_Symbol` and `Tumor_Sample_Barcode` columns. It drops duplicates and pivots to a presence/absence matrix.
+
+- `sh/install.sh`
+  - Purpose: Use the bundled `tools/gdc-client` to download files listed in a GDC manifest.
+  - Example:
+
+    `bash sh/install.sh -m manifest/gdc_manifest.txt -d gdc_downloads`
+
+  - Notes: Ensures `tools/gdc-client` is executable and calls `tools/gdc-client download -m <manifest> -d <dest>`.
+
+- `sh/organize.sh`
+  - Purpose: Pipeline wrapper that unpacks downloads, moves files into a flat source folder, runs the Python organizer, post-processes `.maf` files, and performs cleanup steps. Supports `--dry-run`.
+  - Example:
+
+    `bash sh/organize.sh -c csv/files_by_case_flat.csv -s top10gbm -t organizedTop10`
+
+  - Notes: Internally calls `sh/gzunzip.sh`, `sh/mvfiles.sh`, `py/organize.py`, `py/process_maf.py`, and several cleanup helpers. Use `--dry-run` to print actions without executing them.
+
+- `sh/gzunzip.sh`
+  - Purpose: Find `.gz` files under a provided downloads directory (depth-limited) and run `gunzip` on them in place.
+  - Example:
+
+    `bash sh/gzunzip.sh gdc_downloads`
+
+- `sh/mvfiles.sh`
+  - Purpose: Move files from per-download subdirectories into a single flat `source` directory (excludes `annotations.txt`). Useful before running `py/organize.py`.
+  - Example:
+
+    `bash sh/mvfiles.sh gdc_downloads top10gbm`
+
+- `sh/cleanup.sh`
+  - Purpose: Small helper to remove common temporary or download folders (example: `orga*`, `gdc_d*`, `top*`). Run with caution.
+  - Example:
+
+    `bash sh/cleanup.sh`
+
+- `sh/2lines.sh` (logging helper)
+  - Purpose: Walk a directory tree, sample files (excludes `.idat` and `*annotations.txt`) and write the first two lines of each sampled file to `file_log.txt`. Useful for quick file content inspection.
+  - Example:
+
+    `bash sh/2lines.sh organizedTop10`
+
+- `sh/rm#.sh`
+  - Purpose: Strip comment lines (starting with `#`) and lines starting with `N_` from files under a provided directory. This is an in-place text cleanup helper.
+  - Example:
+
+    `bash sh/rm#.sh organizedTop10`
+
+- `sh/rmmaf.sh`
+  - Purpose: Delete `.maf` files that are not suffixed with `_processed.maf` under a target directory. Keeps processed `.maf` files and removes raw/unprocessed ones.
+  - Example:
+
+    `bash sh/rmmaf.sh organizedTop10`
+
+- `sh/rmun.sh`
+  - Purpose: Remove (recursively) top-level directories matching several common names/patterns used in downloads (e.g. `Masked Cop*`, `Iso*`, `Copy Number Segment*`) under a given path. Use with caution — potentially destructive.
+  - Example:
+
+    `bash sh/rmun.sh organizedTop10`
+
+General notes
+-------------
+- The README previously referred to `py/check_datacategories.py` — that helper is mentioned in examples but is not present in the `py/` folder in this repository. If you want it restored or added, I can implement a small checker that scans the first-level subdirectories under each case and emits a TSV of category presence/absence.
+
+- All script examples assume you run them from the repository root.
+
+If you'd like, I can now:
+- Add short `--help` output examples to any of the Python scripts (i.e., using `argparse` descriptions),
+- Or create a small example dataset and a CI-like smoke test that runs `py/create_multiomics.py` on 2–3 synthetic cases and asserts the outputs exist.
+
