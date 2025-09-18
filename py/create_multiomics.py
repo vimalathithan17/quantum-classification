@@ -78,7 +78,7 @@ def load_gene_expression(patient_dir):
 
 
 def load_miRNA(patient_dir):
-    patterns = ['mirnaseq.mirnas.quantification.txt']
+    patterns = ['mirnas.quantification.txt']
     files = find_files(patient_dir, patterns)
     setattr(load_miRNA, '_last_files', files)
     s = _series_from_files(files, 'miRNA_ID', 'reads_per_million_miRNA_mapped', numeric=True)
